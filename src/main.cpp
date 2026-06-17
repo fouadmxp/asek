@@ -7,8 +7,11 @@
 #include <set>
 #include <tuple>
 #include <cmath>
+#include <format>
+#include <nlohmann/json.hpp>
 
 constexpr const char *DATA_DIR = "data";
+constexpr const char *INDEX_DIR = "index";
 
 void read_words_frequencies_from_buffer(const std::vector<char> &buffer, std::unordered_map<std::string, uint32_t> &wordsFrequencies, uint32_t &numberOfWordsInDocument)
 {
@@ -64,7 +67,7 @@ void get_words_frequencies_from_document(const std::filesystem::directory_entry 
 	document.close();
 }
 
-size_t calculate_tf_of_all_words(const std::filesystem::path &dirPath, std::unordered_map<std::string, std::unordered_map<std::string, double>> &tf_of_all_words)
+size_t calculate_tf_of_all_words(const std::filesystem::path &dirPath, std::unordered_map<std::string, std::unordered_map<std::string, double>> &tfIdfOfAllWords)
 {
 	size_t numberOfDocuments = 0;
 
@@ -86,7 +89,7 @@ size_t calculate_tf_of_all_words(const std::filesystem::path &dirPath, std::unor
 
 					for (auto wordFrequency : documentWordsFrequencies)
 					{
-						tf_of_all_words[wordFrequency.first][fileName] = (1.0f * wordFrequency.second) / numberOfDocuments;
+						tfIdfOfAllWords[wordFrequency.first][fileName] = (1.0f * wordFrequency.second) / numberOfDocuments;
 					}
 				}
 			}
@@ -105,25 +108,25 @@ size_t calculate_tf_of_all_words(const std::filesystem::path &dirPath, std::unor
 void index_tf_idf()
 {
 	std::filesystem::path dirPath = DATA_DIR;
-	std::unordered_map<std::string, std::unordered_map<std::string, double>> tfidf_of_all_words;
+	std::unordered_map<std::string, std::unordered_map<std::string, double>> tfIdfOfAllWords;
 	size_t numberOfDocuments;
 
 	try
 	{
 		// Adds tfs to the map to be used
-		numberOfDocuments = calculate_tf_of_all_words(dirPath, tfidf_of_all_words);
-		// tfidf_of_all_words is only a map of word -> tf at this point
+		numberOfDocuments = calculate_tf_of_all_words(dirPath, tfIdfOfAllWords);
+		// tfIdfOfAllWords is only a map of word -> tf at this point
 	}
 	catch (const std::filesystem::filesystem_error &e)
 	{
 		std::cerr << "Error: " << e.what() << "\n";
 	}
 
-	std::cout << tfidf_of_all_words.size() << "\n";
+	std::cout << tfIdfOfAllWords.size() << "\n";
 	std::cout << numberOfDocuments << "\n";
 
 	// Calculating idfs + multiplying them by all the tfs in the hashmap to make it the full map of tf-idfs
-	for (auto word : tfidf_of_all_words)
+	for (auto word : tfIdfOfAllWords)
 	{
 		double idf = std::log10(1.0f * numberOfDocuments / word.second.size());
 
@@ -131,7 +134,14 @@ void index_tf_idf()
 		{
 			document.second = document.second * idf;
 		}
-	} // @TODO make a new object where documents are sorted by tfidf + cache
+	} // @TODO make a new object where documents are sorted by tfidf
+
+	std::cout << sizeof(tfIdfOfAllWords);
+
+	nlohmann::json j = tfIdfOfAllWords;
+
+	std::ofstream file(std::format("{}/tfIdfIndex.json", INDEX_DIR));
+	file << j.dump(4);
 }
 
 void index()

@@ -8,3 +8,5 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(asek
     src/main.cpp
 )
+
+target_include_directories(asek PRIVATE include)
