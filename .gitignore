@@ -70,3 +70,6 @@ Testing/
 # Index directory & data directory
 index/
 data/
+
+# Visual studio code
+.vs/

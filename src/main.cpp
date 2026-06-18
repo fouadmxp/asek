@@ -38,9 +38,20 @@ void read_words_frequencies_from_buffer(const std::vector<char> &buffer, std::un
 		const char *wordEnd = ptr;
 
 		std::string word(wordStart, wordEnd);
-		wordsFrequencies[word] += 1;
 
-		wordCount++;
+		std::string realWord;
+
+		for (char c : word)
+		{
+			if (std::isalpha(static_cast<unsigned char>(c)))
+				realWord += std::tolower(c);
+		}
+
+		if (!(realWord == ""))
+		{
+			wordsFrequencies[realWord] += 1;
+			wordCount++;
+		}
 	}
 
 	numberOfWordsInDocument = wordCount;
@@ -142,6 +153,7 @@ void index_tf_idf()
 
 	std::ofstream file(std::format("{}/tfIdfIndex.json", INDEX_DIR));
 	file << j.dump(4);
+	file.close();
 }
 
 void index()
