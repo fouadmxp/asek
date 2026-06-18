@@ -100,7 +100,7 @@ size_t calculate_tf_of_all_words(const std::filesystem::path &dirPath, std::unor
 
 					for (auto wordFrequency : documentWordsFrequencies)
 					{
-						tfIdfOfAllWords[wordFrequency.first][fileName] = (1.0f * wordFrequency.second) / numberOfDocuments;
+						tfIdfOfAllWords[wordFrequency.first][fileName] = (1.0f * wordFrequency.second) / numberOfWordsInDocument;
 					}
 				}
 			}
@@ -141,7 +141,7 @@ void index_tf_idf()
 	{
 		double idf = std::log10(1.0f * numberOfDocuments / word.second.size());
 
-		for (auto document : word.second)
+		for (auto &document : word.second)
 		{
 			document.second = document.second * idf;
 		}
