@@ -11,6 +11,8 @@ find_package(glfw3 CONFIG REQUIRED)
 
 add_executable(asek
     src/main.cpp
+	src/index.cpp
+	src/search.cpp
 )
 
 target_link_libraries(asek PRIVATE 
